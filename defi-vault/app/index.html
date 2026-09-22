@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DeFi Vault — Solana Devnet</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3.js/0.20.7/web3.min.js" defer></script>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#111826; --border:#1f2a3a; --text:#e6edf3;
+    --muted:#8b98a5; --accent:#2dd4bf; --danger:#f87171;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg); color:var(--text); display:flex; justify-content:center; padding:40px 16px;
+  }
+  .card{
+    width:100%; max-width:480px; background:var(--panel); border:1px solid var(--border);
+    border-radius:16px; padding:28px;
+  }
+  h1{font-size:20px; margin:0 0 4px}
+  .sub{color:var(--muted); font-size:13px; margin-bottom:24px}
+  button{
+    width:100%; padding:12px 16px; border-radius:10px; border:1px solid var(--border);
+    background:#182233; color:var(--text); font-size:14px; cursor:pointer; margin-top:10px;
+  }
+  button.primary{background:var(--accent); color:#04211d; border:none; font-weight:600}
+  button:disabled{opacity:.5; cursor:not-allowed}
+  input{
+    width:100%; padding:12px; border-radius:10px; border:1px solid var(--border);
+    background:#0d1420; color:var(--text); font-size:14px; margin-top:6px;
+  }
+  label{font-size:12px; color:var(--muted); display:block; margin-top:16px}
+  .row{display:flex; justify-content:space-between; font-size:13px; color:var(--muted); margin-top:8px}
+  .status{
+    margin-top:18px; padding:10px 12px; border-radius:10px; font-size:13px; display:none;
+  }
+  .status.pending{display:block; background:#1c2942; color:#93c5fd}
+  .status.success{display:block; background:#12291f; color:#86efac}
+  .status.error{display:block; background:#2b1414; color:var(--danger)}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>DeFi Vault — Devnet demo</h1>
+  <div class="sub">Yield / staking vault. Faqat Solana Devnet, real mablag' ishlatilmaydi.</div>
+
+  <button id="connectBtn" class="primary">Kошелёкni ulash (Phantom)</button>
+  <div class="row"><span>Wallet:</span><span id="walletAddr">—</span></div>
+  <div class="row"><span>Sizning ulushingiz (shares):</span><span id="myShares">—</span></div>
+  <div class="row"><span>Vault umumiy balansi:</span><span id="vaultBalance">—</span></div>
+
+  <label>Miqdor (token, 6 xonagacha)</label>
+  <input id="amountInput" type="number" min="0" step="0.000001" placeholder="0.0" />
+
+  <button id="depositBtn" disabled>Deposit</button>
+  <button id="withdrawBtn" disabled>Withdraw (shares miqdorida)</button>
+
+  <div id="status" class="status"></div>
+</div>
+
+<script>
+
+const statusEl = document.getElementById('status');
+function setStatus(kind, text) {
+  statusEl.className = 'status ' + kind;
+  statusEl.textContent = text;
+}
+
+let walletPubkey = null;
+
+async function connectWallet() {
+  if (!window.solana || !window.solana.isPhantom) {
+    setStatus('error', 'Phantom wallet topilmadi. Iltimos, brauzer kengaytmasini o\'rnating.');
+    return;
+  }
+  try {
+    setStatus('pending', 'Ulanmoqda...');
+    const resp = await window.solana.connect();
+    walletPubkey = resp.publicKey.toString();
+    document.getElementById('walletAddr').textContent =
+      walletPubkey.slice(0, 4) + '...' + walletPubkey.slice(-4);
+    document.getElementById('depositBtn').disabled = false;
+    document.getElementById('withdrawBtn').disabled = false;
+    setStatus('success', 'Wallet ulandi.');
+    // TODO: dastur klientini yaratib, vault_config va user_position
+    // hisoblarini o'qib, myShares / vaultBalance qiymatlarini yangilang.
+  } catch (err) {
+    setStatus('error', 'Ulanishda xatolik: ' + err.message);
+  }
+}
+
+async function doDeposit() {
+  const amount = document.getElementById('amountInput').value;
+  if (!amount || Number(amount) <= 0) {
+    setStatus('error', 'Miqdorni to\'g\'ri kiriting.');
+    return;
+  }
+  try {
+    setStatus('pending', 'Tranzaksiya yuborilmoqda...');
+    // TODO: program.methods.deposit(new BN(amount * 10**decimals))
+    //   .accounts({...}).rpc() — Anchor client orqali chaqiring.
+    setStatus('success', 'Deposit muvaffaqiyatli bajarildi (demo).');
+  } catch (err) {
+    setStatus('error', 'Xatolik: ' + err.message);
+  }
+}
+
+async function doWithdraw() {
+  const shares = document.getElementById('amountInput').value;
+  if (!shares || Number(shares) <= 0) {
+    setStatus('error', 'Shares miqdorini to\'g\'ri kiriting.');
+    return;
+  }
+  try {
+    setStatus('pending', 'Tranzaksiya yuborilmoqda...');
+    // TODO: program.methods.withdraw(new BN(shares)).accounts({...}).rpc()
+    setStatus('success', 'Withdraw muvaffaqiyatli bajarildi (demo).');
+  } catch (err) {
+    setStatus('error', 'Xatolik: ' + err.message);
+  }
+}
+
+document.getElementById('connectBtn').addEventListener('click', connectWallet);
+document.getElementById('depositBtn').addEventListener('click', doDeposit);
+document.getElementById('withdrawBtn').addEventListener('click', doWithdraw);
+</script>
+</body>
+</html>

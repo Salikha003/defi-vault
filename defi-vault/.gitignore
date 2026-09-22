@@ -1,0 +1,16 @@
+.anchor/
+.DS_Store
+target/
+node_modules/
+dist/
+test-ledger/
+*.log
+
+# Never commit keypairs or secrets
+*.json
+!Anchor.toml
+!package.json
+!tsconfig.json
+!.vscode/*.json
+id.json
+keys/
